@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Proyecto interactivo del Índice de Precios al Consumidor (IPC) de Honduras: evolución histórica, modelo de tendencia con horizonte ajustable, calculadora de poder adquisitivo, recomendaciones y descarga de datos. Proyecto Final, Ciencia de Datos II, CEUTEC."
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='16' fill='%231E2A24'/%3E%3Ctext x='50' y='69' font-size='56' font-family='Georgia,serif' fill='%23DF1B3B' text-anchor='middle'%3E%25%3C/text%3E%3C/svg%3E"
+    />
+    <title>IPC Honduras — Proyecto interactivo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+    <script src="js/chart.umd.min.js"></script>
+  </head>
+  <body>
+    <div class="brand-strip" aria-hidden="true"></div>
+    <header class="site-nav">
+      <div class="nav-top">
+        <span class="nav-brand">
+          <img
+            src="img/ceutec-logo.png"
+            alt="Logo de CEUTEC"
+            width="96"
+            height="34"
+          />
+          <span
+            ><strong>CEUTEC</strong> · Ciencia de Datos II  IPC Honduras</span
+          >
+        </span>
+        <span>Fuente: Banco Central de Honduras</span>
+      </div>
+      <nav class="nav-links" aria-label="Secciones del proyecto">
+        <a href="#resumen">Resumen</a>
+        <a href="#evolucion">Evolución</a>
+        <a href="#variaciones">Variaciones</a>
+        <a href="#eda">EDA</a>
+        <a href="#modelo">Modelo</a>
+        <a href="#calculadora">Calculadora</a>
+        <a href="#recomendaciones">Recomendaciones</a>
+        <a href="#datos">Datos</a>
+        <a href="#metodologia">Metodología</a>
+      </nav>
+    </header>
+
+    <div class="wrap">
+      <main>
+        <div id="errorBanner" role="alert"></div>
+
+        <div class="hero" id="resumen">
+          <h1>El costo de la vida en Honduras sigue subiendo</h1>
+          <div class="kpi-row">
+            <div class="kpi-main">
+              <div id="kpiFigure" class="figure">—</div>
+              <div class="caption">
+                variación interanual del IPC, dato más reciente
+              </div>
+            </div>
+            <div class="kpi-side">
+              <div class="stat">
+                <div id="kpiIpc" class="val">—</div>
+                <div class="lbl">índice IPC</div>
+              </div>
+              <div class="stat">
+                <div id="kpiMensual" class="val">—</div>
+                <div class="lbl">variación mensual</div>
+              </div>
+              <div class="stat">
+                <div id="kpiProy" class="val">—</div>
+                <div class="lbl">proyección próx. mes</div>
+              </div>
+            </div>
+          </div>
+          <div id="rangeBanner" class="alert-banner">
+            <span class="alert-icon">—</span>
+            <span id="rangeBannerText"
+              >Cargando estado frente al rango de tolerancia del BCH…</span
+            >
+          </div>
+        </div>
+
+        <section class="block" id="evolucion">
+          <h2>Evolución histórica del IPC</h2>
+          <p class="lede">
+            Índice de Precios al Consumidor mensual desde enero de 2019. Las
+            líneas punteadas son dos proyecciones de tendencia distintas —
+            regresión lineal y suavizado exponencial de Holt — comparadas en la
+            sección Modelo; son una estimación de tendencia, no una predicción
+            exacta de precios futuros. Ajusta el horizonte:
+          </p>
+          <div
+            class="segmented"
+            role="group"
+            aria-label="Horizonte de proyección"
+          >
+            <button type="button" data-h="3">3 meses</button>
+            <button type="button" data-h="6" class="active">6 meses</button>
+            <button type="button" data-h="12">12 meses</button>
+          </div>
+          <div class="chart-card">
+            <canvas
+              id="chartIpc"
+              role="img"
+              aria-label="Gráfico de línea: evolución mensual del índice IPC de enero 2019 a agosto 2026, con proyección de tendencia a horizonte ajustable. Los valores completos están en la sección de datos."
+            ></canvas>
+          </div>
+          <div class="legend-note">
+            <span
+              ><span class="swatch" style="background: var(--ink)"></span
+              >Histórico</span
+            >
+            <span
+              ><span
+                class="swatch"
+                style="background: var(--gold); opacity: 0.8"
+              ></span
+              >Proyección (regresión lineal)</span
+            >
+            <span
+              ><span
+                class="swatch"
+                style="background: var(--rust); opacity: 0.8"
+              ></span
+              >Proyección (Holt, suavizado exponencial)</span
+            >
+          </div>
+        </section>
+
+        <section class="block" id="variaciones">
+          <h2>Variaciones mes a mes</h2>
+          <p class="lede">
+            Cambio porcentual del IPC frente al mes anterior y frente al mismo
+            mes del año pasado.
+          </p>
+          <div
+            class="segmented"
+            role="group"
+            aria-label="Rango de datos mostrado"
+          >
+            <button type="button" data-r="all" class="active">
+              Todo el historial
+            </button>
+            <button type="button" data-r="12">Últimos 12 meses</button>
+          </div>
+          <div class="two-col">
+            <div class="chart-card">
+              <canvas
+                id="chartMensual"
+                role="img"
+                aria-label="Gráfico de barras: variación mensual del IPC. El rango mostrado se ajusta con los botones de arriba."
+              ></canvas>
+            </div>
+            <div class="chart-card">
+              <canvas
+                id="chartInteranual"
+                role="img"
+                aria-label="Gráfico de línea: variación interanual del IPC. El rango mostrado se ajusta con los botones de arriba."
+              ></canvas>
+            </div>
+          </div>
+        </section>
+
+        <section class="block" id="eda">
+          <h2>Análisis exploratorio de datos (EDA)</h2>
+          <p class="lede">
+            Antes de modelar, así se comporta la serie: qué tan dispersa es la
+            variación mensual, si hay meses que históricamente suben más que
+            otros, y cuáles son los valores más atípicos de los 92 meses.
+          </p>
+
+          <h3>Estadísticos descriptivos</h3>
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div id="edaMeanMensual" class="val">—</div>
+              <div class="lbl">variación mensual promedio</div>
+            </div>
+            <div class="stat-card">
+              <div id="edaStdMensual" class="val">—</div>
+              <div class="lbl">desviación estándar (mensual)</div>
+            </div>
+            <div class="stat-card">
+              <div id="edaMeanInter" class="val">—</div>
+              <div class="lbl">variación interanual promedio</div>
+            </div>
+            <div class="stat-card">
+              <div id="edaStdInter" class="val">—</div>
+              <div class="lbl">desviación estándar (interanual)</div>
+            </div>
+          </div>
+
+          <h3>Estacionalidad: ¿hay meses que suben más por costumbre?</h3>
+          <p>
+            Promedio de la variación mensual agrupando los 92 meses por mes
+            calendario (todos los eneros juntos, todos los febreros, etc.). Si
+            un mes se repite sistemáticamente arriba o abajo del resto, es un
+            patrón estacional real, no ruido.
+          </p>
+          <div class="chart-card">
+            <canvas
+              id="chartSeasonality"
+              role="img"
+              aria-label="Gráfico de barras: variación mensual promedio agrupada por mes calendario, para detectar estacionalidad."
+            ></canvas>
+          </div>
+
+          <h3>Meses atípicos (outliers)</h3>
+          <p>
+            Los 3 meses con el mayor salto y la mayor caída de variación mensual
+            en toda la serie.
+          </p>
+          <div class="compare-table-wrap table-scroll" style="max-height: none">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tipo</th>
+                  <th>Mes</th>
+                  <th>Var. mensual</th>
+                </tr>
+              </thead>
+              <tbody id="edaOutliersBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="block" id="modelo">
+          <h2>Qué dice el modelo de tendencia</h2>
+          <p class="lede">
+            Se compararon dos técnicas de predicción sobre los 92 meses de
+            historia: una regresión lineal simple y un suavizado exponencial
+            doble (método de Holt), que le da más peso al momentum reciente. Se
+            evaluaron dejando fuera los últimos 6 meses como prueba, y
+            prediciendo esos mismos 6 meses "a ciegas" con cada modelo para
+            medir su error real.
+          </p>
+
+          <div class="compare-table-wrap table-scroll" style="max-height: none">
+            <table>
+              <thead>
+                <tr>
+                  <th>Modelo</th>
+                  <th>MAE</th>
+                  <th>RMSE</th>
+                  <th>MAPE</th>
+                </tr>
+              </thead>
+              <tbody id="modelCompareBody"></tbody>
+            </table>
+          </div>
+          <p class="model-note" id="modelWinnerNote"></p>
+
+          <h3>Cifras del modelo elegido</h3>
+          <div class="kpi-side">
+            <div class="stat">
+              <div id="modelSlope" class="val">—</div>
+              <div class="lbl">alza mensual estimada (regresión)</div>
+            </div>
+            <div class="stat">
+              <div id="modelR2" class="val">—</div>
+              <div class="lbl">ajuste de la regresión (R²)</div>
+            </div>
+            <div class="stat">
+              <div id="modelRecent" class="val">—</div>
+              <div class="lbl">alza mensual real, últimos 6 meses</div>
+            </div>
+            <div class="stat">
+              <div id="modelFinal" class="val">—</div>
+              <div class="lbl">
+                IPC proyectado a <span id="modelHorizonLabel">—</span> (modelo
+                ganador)
+              </div>
+            </div>
+          </div>
+          <p class="model-note">
+            El ajuste de la regresión es alto (R² cercano a 1), pero eso solo
+            confirma que el IPC crece de forma sostenida — no que el ritmo sea
+            constante, por eso se comparó contra Holt. En el gráfico de
+            Evolución de arriba se dibujan
+            <strong>ambas proyecciones</strong> para que se vea dónde coinciden
+            y dónde se separan.
+          </p>
+        </section>
+
+        <section class="block" id="calculadora">
+          <h2>Calculadora de poder adquisitivo</h2>
+          <p class="lede">
+            Convierte un monto en lempiras entre dos meses usando la razón de
+            índices IPC — responde directamente "¿cuánto necesito hoy para lo
+            que costaba X en tal fecha?", una de las decisiones que este
+            análisis permite tomar.
+          </p>
+          <div class="calc-card">
+            <div class="calc-row">
+              <label for="calcAmount">Monto (L)</label>
+              <input
+                type="number"
+                id="calcAmount"
+                value="1000"
+                min="0"
+                step="0.01"
+              />
+            </div>
+            <div class="calc-row">
+              <label for="calcFrom">Desde</label>
+              <select id="calcFrom"></select>
+            </div>
+            <div class="calc-row">
+              <label for="calcTo">Hasta</label>
+              <select id="calcTo"></select>
+            </div>
+            <div class="calc-result">
+              <div class="calc-result-figure" id="calcResult">—</div>
+              <div class="calc-result-label">equivalente</div>
+            </div>
+          </div>
+          <p class="model-note" id="calcExplain"></p>
+        </section>
+
+        <section class="block" id="recomendaciones">
+          <h2>Lecturas y recomendaciones</h2>
+          <p class="lede">
+            Cinco observaciones que salen directamente de los datos limpios — la
+            base de la sección de decisiones del informe.
+          </p>
+          <div class="insight-list">
+            <div class="insight">
+              <div class="insight-figure">+<span id="insRecent">—</span>%</div>
+              <p>
+                Variación mensual promedio de marzo a agosto de 2026, frente a
+                un promedio histórico de +<span id="insHist">—</span>%. El ritmo
+                de subida reciente es cerca de 1.6 veces el promedio histórico,
+                no un caso aislado de un solo mes.
+              </p>
+            </div>
+            <div class="insight">
+              <div class="insight-figure"><span id="insVol">—</span>×</div>
+              <p>
+                Cuánto más volátil es la variación mensual reciente (últimos 6
+                meses) frente a los primeros 6 meses registrados: los precios no
+                solo suben más, se mueven de forma más errática mes a mes.
+              </p>
+            </div>
+            <div class="insight">
+              <div class="insight-figure">abr-26</div>
+              <p>
+                Mes con el salto mensual más fuerte de toda la serie (+1.73%).
+                Si el BCH desglosa el IPC por división de gasto, vale la pena
+                revisar qué categoría explicó ese pico antes de repetir compras
+                o ajustar precios en la misma época el próximo año.
+              </p>
+            </div>
+            <div class="insight">
+              <div class="insight-figure">6.20%</div>
+              <p>
+                Variación interanual del último dato disponible (agosto 2026) —
+                la más alta de toda la serie. Presupuestos calculados con el
+                promedio histórico (4.78%) podrían estar subestimando el costo
+                real actual.
+              </p>
+            </div>
+            <div class="insight">
+              <div class="insight-figure"><span id="insOutRange">—</span>%</div>
+              <p>
+                De los 92 meses analizados, este porcentaje estuvo
+                <strong>fuera</strong> del rango de tolerancia del BCH (4.0% ± 1
+                p.p., es decir 3%–5% interanual, según el Programa Monetario
+                2026-2027). El estado del mes más reciente se muestra arriba, en
+                el resumen.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="block" id="datos">
+          <h2>Datos completos</h2>
+          <p class="lede">
+            Serie mensual usada en este análisis, construida a partir de los
+            boletines oficiales del Índice de Precios al Consumidor del Banco
+            Central de Honduras.<sup class="prelim">*</sup>
+          </p>
+          <div class="table-toolbar">
+            <button type="button" class="btn" id="downloadCsvBtn">
+              Descargar CSV
+            </button>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Mes</th>
+                  <th>IPC</th>
+                  <th>Var. mensual</th>
+                  <th>Var. interanual</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="block" id="metodologia">
+          <h2>Metodología</h2>
+          <p class="lede">
+            Resumen del proceso de ciencia de datos detrás de este proyecto:
+            parte de lo planteado en el avance entregado, y se amplió con la
+            comparación de modelos y el sistema de alerta que se explican abajo.
+          </p>
+          <h3>Fuente y dataset</h3>
+          <p>
+            Los datos provienen de los boletines oficiales del Índice de Precios
+            al Consumidor publicados por el Banco Central de Honduras (BCH),
+            Departamento de Gestión de Información Económica (indicadores 608,
+            609 y 610). El tramo octubre 2023 - agosto 2026 corresponde a cifras
+            oficiales ya publicadas en la base vigente (diciembre 2025 = 100).
+            El tramo enero 2019 - septiembre 2023 fue reconstruido encadenando
+            las variaciones mensuales oficiales (base diciembre 1999 = 100,
+            idénticas en ambas series) y reescalado para empalmar exactamente
+            con el valor oficial de octubre 2023. El dataset final tiene cuatro
+            campos: fecha, IPC, variación mensual (%) y variación interanual
+            (%), ordenados cronológicamente desde enero de 2019.
+          </p>
+          <h3>ETL</h3>
+          <p>
+            Extracción de las tablas de los boletines mensuales oficiales del
+            IPC publicados por el BCH, transformación para unificar el formato
+            de fecha, encadenar el tramo 2019-2023 con la base vigente,
+            convertir el IPC a numérico y ordenar los registros
+            cronológicamente, y carga al dataset limpio que alimenta
+            directamente esta aplicación.
+          </p>
+          <h3>Limpieza</h3>
+          <p>
+            Se revisaron meses faltantes, valores no numéricos y duplicados. Se
+            detectó y eliminó un registro duplicado de junio de 2026. El dato
+            más reciente (agosto 2026) se publica con más decimales que el resto
+            de la serie, señal de que aún es preliminar y sujeto a revisión por
+            el BCH.
+          </p>
+          <h3>EDA</h3>
+          <p>
+            Se calcularon estadísticos descriptivos (media y desviación estándar
+            de la variación mensual e interanual), se agrupó la variación
+            mensual por mes calendario para buscar estacionalidad, y se
+            identificaron los meses con mayor y menor variación mensual de toda
+            la serie. Resultados completos en la sección EDA de este mismo
+            sitio.
+          </p>
+          <h3>Modelo</h3>
+          <p>
+            Se implementaron y compararon dos técnicas: una regresión lineal
+            simple sobre el índice IPC, y un suavizado exponencial doble (método
+            de Holt, con nivel y tendencia) con selección de sus parámetros
+            alpha/beta por búsqueda en cuadrícula, minimizando el error sobre un
+            conjunto de prueba (los últimos 6 meses, no usados para entrenar).
+            Se reporta el error de cada modelo (MAE, RMSE, MAPE) en la sección
+            Modelo, y la proyección final usa ambas técnicas en paralelo para
+            que las decisiones no dependan de un solo método. Ambas proyecciones
+            se tratan como una estimación de tendencia, no como una predicción
+            exacta de precios futuros.
+          </p>
+          <h3>Umbral de decisión</h3>
+          <p>
+            Se incorporó el rango de tolerancia de inflación del BCH (4.0% ± 1
+            punto porcentual, vigente según el Programa Monetario 2026-2027)
+            como referencia para marcar automáticamente si el dato interanual
+            más reciente está dentro o fuera de la meta oficial — la base del
+            sistema de alerta que se ve en la parte superior del sitio.
+          </p>
+        </section>
+      </main>
+
+      <footer>
+        <p>
+          <sup class="prelim">*</sup> El último dato disponible (agosto 2026) se
+          publica con más decimales que el resto de la serie, lo que sugiere que
+          aún es una cifra preliminar sujeta a revisión por el BCH.
+        </p>
+        <p>
+          Durante la limpieza de datos se detectó y eliminó un registro
+          duplicado (junio 2026) antes de este análisis.
+        </p>
+        <p>
+          Datos: indicadores 608 (IPC), 609 (variación interanual) y 610
+          (variación mensual) del catálogo del Banco Central de Honduras —
+          bch.hn.
+        </p>
+        <div class="credits">
+          Walter Javier Lopez Gutierrez · Julio Cesar Guevara Pineda · Michael
+          André Salgado Leiva — Proyecto Final, Ciencia de Datos II, CEUTEC.
+        </div>
+      </footer>
+    </div>
+
+    <script src="js/app.js"></script>
+  </body>
+</html>
