@@ -135,13 +135,25 @@ try {
   document.getElementById("edaStdMensual").textContent =
     std(mensualAll).toFixed(2) + " p.p.";
   document.getElementById("edaMeanInter").textContent =
-    (mean(interanualAll) >= 0 ? "+" : "") + mean(interanualAll).toFixed(2) + "%";
+    (mean(interanualAll) >= 0 ? "+" : "") +
+    mean(interanualAll).toFixed(2) +
+    "%";
   document.getElementById("edaStdInter").textContent =
     std(interanualAll).toFixed(2) + " p.p.";
 
   const monthNames = [
-    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
   ];
   const seasonality = Array.from({ length: 12 }, (_, mIdx) => {
     const vals = data
@@ -150,35 +162,38 @@ try {
     return vals.length ? mean(vals) : 0;
   });
   // grafico de estacionalidad: promedio de cada mes calendario (todos los eneros juntos, etc)
-  const chartSeasonality = new Chart(document.getElementById("chartSeasonality"), {
-    type: "bar",
-    data: {
-      labels: monthNames.map((m) => m.slice(0, 3)),
-      datasets: [
-        {
-          label: "Var. mensual promedio",
-          data: seasonality,
-          backgroundColor: seasonality.map((v) =>
-            v >= 0 ? "#AB4630" : "#3E6B4C",
-          ),
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: {
-          grid: { color: "#DDE1D6" },
-          ticks: { font: { family: "IBM Plex Mono", size: 11 } },
-        },
-        x: {
-          grid: { display: false },
-          ticks: { font: { family: "IBM Plex Mono", size: 10 } },
+  const chartSeasonality = new Chart(
+    document.getElementById("chartSeasonality"),
+    {
+      type: "bar",
+      data: {
+        labels: monthNames.map((m) => m.slice(0, 3)),
+        datasets: [
+          {
+            label: "Var. mensual promedio",
+            data: seasonality,
+            backgroundColor: seasonality.map((v) =>
+              v >= 0 ? "#AB4630" : "#3E6B4C",
+            ),
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            grid: { color: "#DDE1D6" },
+            ticks: { font: { family: "IBM Plex Mono", size: 11 } },
+          },
+          x: {
+            grid: { display: false },
+            ticks: { font: { family: "IBM Plex Mono", size: 10 } },
+          },
         },
       },
     },
-  });
+  );
 
   const sortedByMensual = data.slice().sort((a, b) => b.mensual - a.mensual);
   const topUp = sortedByMensual.slice(0, 3);
@@ -199,7 +214,8 @@ try {
     (v) => v < RANGE_LOW || v > RANGE_HIGH,
   ).length;
   document.getElementById("insOutRange").textContent = (
-    (outOfRangeCount / n) * 100
+    (outOfRangeCount / n) *
+    100
   ).toFixed(0);
 
   const lastOut = last.interanual < RANGE_LOW || last.interanual > RANGE_HIGH;
@@ -218,7 +234,8 @@ try {
   function fitRegression(xArr, yArr) {
     const xM = mean(xArr);
     const yM = mean(yArr);
-    let num = 0, den = 0;
+    let num = 0,
+      den = 0;
     for (let i = 0; i < xArr.length; i++) {
       num += (xArr[i] - xM) * (yArr[i] - yM);
       den += (xArr[i] - xM) ** 2;
@@ -229,7 +246,8 @@ try {
   }
 
   const { slope, intercept } = fitRegression(xs, ys);
-  let ssRes = 0, ssTot = 0;
+  let ssRes = 0,
+    ssTot = 0;
   const yMeanFull = mean(ys);
   for (let i = 0; i < n; i++) {
     const predY = slope * xs[i] + intercept;
@@ -264,8 +282,8 @@ try {
   const trainXs = xs.slice(0, n - TEST_SIZE);
 
   const regTrain = fitRegression(trainXs, trainYs);
-  const regTestPred = testYs.map((_, i) =>
-    regTrain.slope * (trainXs.length + i) + regTrain.intercept,
+  const regTestPred = testYs.map(
+    (_, i) => regTrain.slope * (trainXs.length + i) + regTrain.intercept,
   );
 
   // probamos varias combinaciones de alpha/beta y nos quedamos con la que menos error da
@@ -279,7 +297,11 @@ try {
     }
   }
   const holtFitTrain = holtFit(trainYs, bestHolt.alpha, bestHolt.beta);
-  const holtTestPred = holtForecast(holtFitTrain.level, holtFitTrain.trend, TEST_SIZE);
+  const holtTestPred = holtForecast(
+    holtFitTrain.level,
+    holtFitTrain.trend,
+    TEST_SIZE,
+  );
 
   function errorMetrics(actual, pred) {
     const errs = actual.map((a, i) => a - pred[i]);
@@ -300,7 +322,11 @@ try {
     compareBody.appendChild(tr);
   };
   compareRow("Regresión lineal", regErr, !holtWins);
-  compareRow(`Holt (α=${bestHolt.alpha.toFixed(2)}, β=${bestHolt.beta.toFixed(2)})`, holtErr, holtWins);
+  compareRow(
+    `Holt (α=${bestHolt.alpha.toFixed(2)}, β=${bestHolt.beta.toFixed(2)})`,
+    holtErr,
+    holtWins,
+  );
 
   document.getElementById("modelWinnerNote").innerHTML =
     `Con los últimos ${TEST_SIZE} meses como prueba, <strong>${holtWins ? "Holt" : "la regresión lineal"}</strong> tuvo menor error (RMSE ${Math.min(regErr.rmse, holtErr.rmse).toFixed(3)} vs ${Math.max(regErr.rmse, holtErr.rmse).toFixed(3)}) — ${holtWins ? "reacciona más rápido a la aceleración reciente" : "la tendencia de fondo pesa más que el ruido de corto plazo"}. Ese es el modelo que se usa como proyección principal.`;
